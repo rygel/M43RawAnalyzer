@@ -65,7 +65,12 @@ namespace M43RawAnalyzer
             }
             else
             {
-                files = Directory.GetFiles(folder, "*.RW2", SearchOption.TopDirectoryOnly);
+                if (checkBoxAnalyzeSubDirs.Checked) {
+                    files = Directory.GetFiles(folder, "*.RW2", SearchOption.AllDirectories);
+                }
+                else {
+                    files = Directory.GetFiles(folder, "*.RW2", SearchOption.TopDirectoryOnly);
+                }
 
                 if (files.Length == 0) return;
 
@@ -145,6 +150,10 @@ namespace M43RawAnalyzer
         private void buttonCancel_Click(object sender, EventArgs e)
         {
             bw.CancelAsync();
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e) {
+
         }
     }
 }
