@@ -103,9 +103,9 @@
             this.Controls.Add(this.labelDirectory);
             this.Controls.Add(this.buttonAnalyze);
             this.Controls.Add(this.buttonSelectDirectory);
-            this.MinimumSize = new System.Drawing.Size(0, 170);
+            this.MinimumSize = new System.Drawing.Size(16, 170);
             this.Name = "Form1";
-            this.Text = "M43RawAnalyzer";
+            this.Text = "M43RawAnalyzer 1.0.0 30.11.2012";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
 

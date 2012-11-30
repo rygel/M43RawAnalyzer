@@ -79,7 +79,7 @@ namespace M43RawAnalyzer
             distortion2.a = distortion2.scale * (distortionValues[8] / 32768.0);
             distortion2.b = distortion2.scale * (distortionValues[4] / 32768.0);
             distortion2.c = distortion2.scale * (distortionValues[11] / 32768.0);
-            //EM5 vielleicht:0xC20E
+            //EM5 vielleicht:0xC20E oder 0x2854 bis 0x2863
 
             ExifReader reader = null;
             try
@@ -113,6 +113,9 @@ namespace M43RawAnalyzer
             //        }
             //    }
             //}
+            //distortionValues[10]= 1;
+            //int checksumResult = Verify_checksums(distortionValues);
+
             WriteOutputToFile(cameraName, lensName, focalLength.ToString(), aperture.ToString(), distortionValues, distortion, distortion2, filename);
         }
 
@@ -125,20 +128,20 @@ namespace M43RawAnalyzer
                 tw.Write(GetHeader());
             }
             tw.Write(cameraName);
-            tw.Write("\t");
+            tw.Write("\t'");
             tw.Write(lensName);
-            tw.Write("\t");
+            tw.Write("\t'");
             tw.Write(focalLength);
-            tw.Write("\t");
+            tw.Write("\t'");
             //tw.Write(aperture);
-            //tw.Write("\t");
-            tw.Write("{0}\t{1:F15}\t{2:F15}\t{3:F15}\t{4:F15}\t", distortion.n, distortion.scale, distortion.a, distortion.b, distortion.c);
-            tw.Write("{0}\t{1:F15}\t{2:F15}\t{3:F15}\t{4:F15}\t", dist2.n, dist2.scale, dist2.a, dist2.b, dist2.c);
+            //tw.Write("\t'");
+            tw.Write("{0}\t'{1:F15}\t'{2:F15}\t'{3:F15}\t'{4:F15}\t'", distortion.n, distortion.scale, distortion.a, distortion.b, distortion.c);
+            tw.Write("{0}\t'{1:F15}\t'{2:F15}\t'{3:F15}\t'{4:F15}\t'", dist2.n, dist2.scale, dist2.a, dist2.b, dist2.c);
 
             for (int i = 0; i < 16; i++)
             {
                 tw.Write(Convert.ToString(distortionValues[i], 16).PadLeft(4, '0'));
-                if (i < 15) tw.Write("\t");
+                if (i < 15) tw.Write("\t'");
             }
             tw.Write("\t");
             tw.WriteLine(Path.GetFileName(filename));
@@ -151,6 +154,58 @@ namespace M43RawAnalyzer
         public static UInt16 ReverseBytes(UInt16 value)
         {
             return (UInt16)((value & 0xFFU) << 8 | (value & 0xFF00U) >> 8);
+        }
+
+        int Verify_checksums(UInt16[] data)
+        {
+            byte[] data8 = new byte[32];
+            int j = 0;
+            for (int i = 0; i < data.Length; i++) {
+               byte[] temp = BitConverter.GetBytes( data[i] );
+                data8[j]   = temp[0];
+                data8[j+1] = temp[1];
+                j = j + 2;
+            }
+            
+            byte[] even = new byte[16];
+            byte[] odd = new byte[16];
+            UInt16 csum1, csum2, csum3, csum4;
+            int res;
+
+            for (int i = 0; i < 16; i++) {
+                even[i] = data8[i*2];
+                odd[i] = data8[i*2+1];
+            }
+            byte[] csum1Array = new byte[12];
+            byte[] csum2Array = new byte[12];
+            byte[] csum3Array = new byte[14];
+            byte[] csum4Array = new byte[14];
+            Array.Copy(data8, 4, csum1Array, 0, 12);
+            Array.Copy(data8, 16, csum2Array, 0, 12);
+            Array.Copy(data8, 1, csum3Array, 0, 14);
+            Array.Copy(data8, 1, csum4Array, 0, 14);
+
+            csum1=Checksum(csum1Array,12);
+            csum2 = Checksum(csum2Array, 12);
+            csum3 = Checksum(csum3Array, 14);
+            csum4 = Checksum(csum4Array, 14);
+            res = 0;
+            res ^= (csum1 ^ data[1]);
+            res ^= (csum2 ^ data[14]);
+            res ^= (csum3 ^ data[0]);
+            res ^= (csum4 ^ data[15]);
+            return res;
+        }
+
+        UInt16 Checksum(byte[] data, int len)
+        {
+            
+            UInt16 csum=0;
+
+            for (int i = 0; i < len; i++) {
+                csum = (UInt16)((73 * csum + data[i]) % 0xFFEF);
+            }
+            return csum;
         }
 
         public String GetHeader()

@@ -67,6 +67,8 @@ namespace M43RawAnalyzer
             {
                 files = Directory.GetFiles(folder, "*.RW2", SearchOption.TopDirectoryOnly);
 
+                if (files.Length == 0) return;
+
                 currentFile = 0;
                 labelFile.Text = "Current File: " + files[currentFile];
                 labelProcessing.Text = String.Format("Processing file {0} of {1}.", currentFile + 1, files.Length);

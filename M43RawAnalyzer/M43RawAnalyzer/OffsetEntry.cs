@@ -34,13 +34,13 @@ namespace M43RawAnalyzer
         private bool IsLensName(string stringToTest) {
             if (stringToTest.StartsWith("LUMIX")) {
                 return true;
+            } else if (stringToTest.StartsWith("LEICA")) {
+                return true;
             } else if (stringToTest.StartsWith("OLYMPUS")) {
                 return true;
-            }
-            else if (stringToTest.StartsWith("SIGMA")) {
+            } else if (stringToTest.StartsWith("SIGMA")) {
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         }
